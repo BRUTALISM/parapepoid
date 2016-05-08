@@ -3,5 +3,5 @@
             [parapepoid.core :refer :all]))
 
 (deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+  (testing "parapepoid.core has no interesting stuff in it, yet."
+    (is (= 1 1))))

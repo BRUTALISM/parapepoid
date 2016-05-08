@@ -21,8 +21,6 @@
         lefts (vec (mapcat lfn (partition 2 1 counts)))]
     (conj lefts (vec (repeat (last counts) 0.0)))))
 
-(network [5 3 1])
-
 (defn activation [x] (Math/tanh x))
 
 (defn dactivation [x] (- 1.0 (* x x)))
@@ -90,18 +88,3 @@
   (if-let [[input target] (first data)]
     (recur (train network input target lr) (rest data) lr)
     network))
-
-;; -----------------------------------------------------------------------------
-
-(defn invertor-nn [counts training-count learning-rate]
-  (let [inverse-data (fn [] (let [n (rand 1)] [[n 0] [0 n]]))]
-    (train-data (network counts)
-                (repeatedly training-count inverse-data)
-                learning-rate)))
-
-(def nn (network [2 3 5 2]))
-(feed-forward [0.2 0] nn)
-(train nn [1.0 0.0] [0.0 1.0] 0.1)
-
-(def in (invertor-nn [2 5 2] 100 0.2))
-(feed-forward [0.5 0] in)
