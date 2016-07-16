@@ -1,4 +1,4 @@
-(ns parapepoid.generative
+(ns parapepoid.nn.generative
   (:require [parapepoid.neural :as n]
             [clojure.core.matrix :as m]))
 

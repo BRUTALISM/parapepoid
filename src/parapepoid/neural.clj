@@ -2,6 +2,8 @@
   (:require [clojure.core.matrix :as m]
             [clojure.core.matrix.operators :as mo]))
 
+;; OLD CODE! The new version is being worked on in the nn namespace.
+
 (defn generate-weights
   "Generates a matrix of weights needed to connect a layer with from neurons to
   a layer with to neurons."
