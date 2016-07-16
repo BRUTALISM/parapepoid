@@ -58,9 +58,9 @@
   (let [blocks (partition 2 network) ;; (layer weights) pairs
         odeltas (output-deltas target (last network))
         deltafn (fn [deltas block]
-              (let [[from from->to] block
-                    delta (last deltas)]
-                (conj deltas (hidden-deltas delta from from->to))))
+                  (let [[from from->to] block
+                        delta (last deltas)]
+                    (conj deltas (hidden-deltas delta from from->to))))
         all-deltas (reverse (reduce deltafn [odeltas] (reverse (rest blocks))))
         weightfn (fn [[deltas [from from->to]]]
                    (update-strengths deltas from from->to lr))
