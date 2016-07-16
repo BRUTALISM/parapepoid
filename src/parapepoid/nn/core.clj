@@ -1,6 +1,5 @@
 (ns parapepoid.nn.core
   (:require [clojure.core.matrix :as m]
-            [clojure.core.matrix.operators :as mo]
             [parapepoid.nn.activation :as a]))
 
 (defprotocol PNeuralNetwork
@@ -22,22 +21,29 @@
 
 (defrecord NeuralNetwork [weights biases options]
   PNeuralNetwork
-  (weights [this] (:weights this))
-  (biases [this] (:biases this))
-  (activation-fn [this] (-> activation-functions
-                            (-> this :options :activation) :main))
-  (activation-prime-fn [this] (-> activation-functions
-                                  (-> this :options :activation) :prime)))
+  (weights [network] (:weights network))
+  (biases [network] (:biases network))
+  (activation-fn [network]
+    (get-in activation-functions [(get-in network [:options :activation])
+                                  :main]))
+  (activation-prime-fn [network]
+    (get-in activation-functions [(get-in network [:options :activation])
+                                  :prime])))
+
+(def default-options
+  {:activation :sigmoid})
 
 (defn network
-  "Makes a network with given layer sizes."
-  ([sizes] (network sizes {:activation :sigmoid}))
+  "Makes a network with given layer sizes. The (optional) options map is used to
+  configure the activation and cost functions."
+  ([sizes] (network sizes default-options))
   ([sizes options]
    (let [make-weights
          (fn [[from to]]
            (let [num-elements (* from to)
                  rfn #(rand (/ 1.0 num-elements))]
-             (m/array (map vec (partition to (repeatedly num-elements rfn))))))
+             (m/array (map vec (partition from
+                                          (repeatedly num-elements rfn))))))
          make-biases
          (fn [neurons]
            (m/array (repeatedly neurons #(rand (/ 1.0 neurons)))))
