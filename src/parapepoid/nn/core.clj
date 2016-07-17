@@ -5,15 +5,17 @@
 (defprotocol PNeuralNetwork
   "Defines elementary neural network operations, like getting bias and weight
   values."
-  (weights [this]
+  (weights [network]
     "Gets a sequence of weight matrices for all layers of the given network.")
-  (biases [this]
+  (biases [network]
     "Gets a sequence of bias arrays for all layers of the given network (not
     including the input \"layer\", of course).")
-  (activation-fn [this]
+  (activation-fn [network]
     "Gets the activation function used to drive the given network.")
-  (activation-prime-fn [this]
-    "Gets the derivative of the activation function."))
+  (activation-prime-fn [network]
+    "Gets the derivative of the activation function.")
+  (shape [network]
+    "Gets the counts of neurons in each layer."))
 
 (def activation-functions
   {:sigmoid {:main a/sigmoid
@@ -28,14 +30,17 @@
                                   :main]))
   (activation-prime-fn [network]
     (get-in activation-functions [(get-in network [:options :activation])
-                                  :prime])))
+                                  :prime]))
+  (shape [network]
+    (into [(last (m/shape (first (:weights network))))]
+          (mapv #(first (m/shape %)) (:biases network)))))
 
 (def default-options
   {:activation :sigmoid})
 
 (defn network
   "Makes a network with given layer sizes. The (optional) options map is used to
-  configure the activation and cost functions."
+  configure the activation function."
   ([sizes] (network sizes default-options))
   ([sizes options]
    (let [make-weights
