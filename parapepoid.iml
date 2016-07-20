@@ -15,7 +15,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Leiningen: clojure-complete:0.2.4" level="project" />
     <orderEntry type="library" name="Leiningen: net.mikera/clojure-utils:0.6.2" level="project" />
-    <orderEntry type="library" name="Leiningen: net.mikera/core.matrix:0.51.0" level="project" />
+    <orderEntry type="library" name="Leiningen: net.mikera/core.matrix:0.52.2" level="project" />
     <orderEntry type="library" name="Leiningen: net.mikera/mathz:0.3.0" level="project" />
     <orderEntry type="library" name="Leiningen: net.mikera/randomz:0.3.0" level="project" />
     <orderEntry type="library" name="Leiningen: net.mikera/vectorz-clj:0.44.0" level="project" />
