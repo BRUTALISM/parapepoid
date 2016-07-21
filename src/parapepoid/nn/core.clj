@@ -38,6 +38,12 @@
 (def default-options
   {:activation :sigmoid})
 
+(defn raw-network
+  "Creates a neural network using already populated weight and bias matrices. If
+  no options are specified, uses parapepoid.nn.core/default-options."
+  ([weights biases] (raw-network weights biases default-options))
+  ([weights biases options] (NeuralNetwork. weights biases options)))
+
 (defn network
   "Makes a network with given layer sizes. The (optional) options map is used to
   configure the activation function."
@@ -54,4 +60,4 @@
            (m/array (repeatedly neurons #(rand (/ 1.0 neurons)))))
          weights (map make-weights (partition 2 1 sizes))
          biases (map make-biases (rest sizes))]
-     (NeuralNetwork. weights biases options))))
+     (raw-network weights biases options))))
