@@ -23,3 +23,20 @@
         biases (map apply-nabla (nn/biases network) nabla-bs)
         weights (map apply-nabla (nn/weights network) nabla-ws)]
     (nn/raw-network weights biases)))
+
+(defn sgd
+  "Trains the network using stochastic mini-batch gradient descent. Training
+  data should be a list of [inputs outputs] pairs used to train the network."
+  [network training-data batch-size learning-rate]
+  (let [batches (partition batch-size batch-size [] training-data)
+        train-fn (fn [net batch] (train net batch learning-rate))]
+    (reduce train-fn network batches)))
+
+; Упореди са референтном Python имплементацијом, изгледа да нешто није у реду.
+; (Не инвертује.)
+(def invertor (nn/network [2 5 2]))
+(defn make-invertor-training []
+  (let [n (rand 1)]
+    [[n 0] [0 n]]))
+(def invertor-training (repeatedly 1000 make-invertor-training))
+(def trained-invertor (sgd invertor invertor-training 20 1))
