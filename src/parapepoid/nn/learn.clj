@@ -31,12 +31,3 @@
   (let [batches (partition batch-size batch-size [] training-data)
         train-fn (fn [net batch] (train net batch learning-rate))]
     (reduce train-fn network batches)))
-
-; Упореди са референтном Python имплементацијом, изгледа да нешто није у реду.
-; (Не инвертује.)
-(def invertor (nn/network [2 5 2]))
-(defn make-invertor-training []
-  (let [n (rand 1)]
-    [[n 0] [0 n]]))
-(def invertor-training (repeatedly 1000 make-invertor-training))
-(def trained-invertor (sgd invertor invertor-training 20 1))
