@@ -1,5 +1,7 @@
 (ns parapepoid.nn.generative
-  (:require [parapepoid.neural :as n]
+  (:require [parapepoid.nn.core :as n]
+            [parapepoid.nn.learn :as l]
+            [parapepoid.nn.propagation :as p]
             [clojure.core.matrix :as m]))
 
 (defn generate-inputs
@@ -16,30 +18,34 @@
   1 becomes layer n - 1, etc."
   [network]
   ;; TODO: Ovo verovatno ne moze ovako jednostavno da se resi. Istrazi.
-  (let [fns (cycle [identity m/transpose])]
-    (mapv #(%1 %2) fns (reverse network))))
+  (n/raw-network (reverse (map m/transpose (n/weights network)))
+                 (conj (vec (reverse (butlast (n/biases network))))
+                       (m/new-vector (first (n/shape network))))
+                 (n/options network)))
 
 (defn reversed-errors
   "Calculates the difference between inputs and the result of feeding network's
   outputs back through the inverted network."
   [network inputs]
   (let [reversed (reverse-network network)
-        outputs (last (n/feed-forward inputs network))
-        reversed-outputs (last (n/feed-forward outputs reversed))]
-    (map - reversed-outputs inputs)))
+        outputs (p/propagate-forward network inputs)
+        reversed-outputs (p/propagate-forward reversed outputs)]
+    (m/sub reversed-outputs inputs)))
 
 ;; ↓ ↓ ↓ TESTING AREA ↓ ↓ ↓
 
-(defn make-invertor [counts training-count learning-rate]
+(defn make-invertor [counts training-count batch-size learning-rate]
   (let [inverse-data (fn [] (let [n (rand 1)] [[n 0] [0 n]]))]
-    (n/train-data (n/network counts)
-                (repeatedly training-count inverse-data)
-                learning-rate)))
+    (l/sgd (n/network counts)
+           (repeatedly training-count inverse-data)
+           batch-size
+           learning-rate)))
 
-(def invertor (make-invertor [2 5 2] 1000 0.2))
+(def invertor (make-invertor [2 8 2] 1000 1 2))
 (def reversed-invertor (reverse-network invertor))
 
-(n/feed-forward [0.3 0] invertor)
-(n/feed-forward [-1.539573311532253E-4 0.3724641836697799] reversed-invertor)
+(p/propagate-forward invertor [0.9 0])
+(p/propagate-forward reversed-invertor
+                     [0.016913162210121145 0.8507391898240442])
 
-(reversed-errors invertor [0.9 0])
+(reversed-errors invertor [0.1 0])
