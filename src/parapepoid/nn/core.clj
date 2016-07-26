@@ -15,7 +15,9 @@
   (activation-prime-fn [network]
     "Gets the derivative of the activation function.")
   (shape [network]
-    "Gets the counts of neurons in each layer."))
+    "Gets the counts of neurons in each layer.")
+  (options [network]
+    "Gets the options map."))
 
 (def activation-functions
   {:sigmoid {:main a/sigmoid
@@ -33,7 +35,8 @@
                                   :prime]))
   (shape [network]
     (into [(last (m/shape (first (:weights network))))]
-          (mapv #(first (m/shape %)) (:biases network)))))
+          (mapv #(first (m/shape %)) (:biases network))))
+  (options [network] (:options network)))
 
 (def default-options
   {:activation :sigmoid})
