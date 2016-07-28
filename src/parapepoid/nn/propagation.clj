@@ -9,7 +9,7 @@
         weights (nn/weights network)
         biases (nn/biases network)
         rfn (fn [in [ws bs]] (m/emap activation-fn (m/add (m/mmul ws in) bs)))]
-    (reduce rfn inputs (partition 2 (interleave weights biases)))))
+    (reduce rfn inputs (map vector weights biases))))
 
 (defn propagate-backward
   "Propagates the given inputs forward, then calculates the per-layer bias and
@@ -36,8 +36,7 @@
           (conj nabla-biases-so-far
                 (m/mul (m/mmul (m/transpose weights) (last nabla-biases-so-far))
                        (m/emap activation-prime zs))))
-        nabla-bias-data (partition 2 (interleave (reverse ws)
-                                                 (reverse (butlast zs))))
+        nabla-bias-data (map vector (reverse ws) (reverse (butlast zs)))
         nabla-biases (reduce nabla-bias-fn (list delta) nabla-bias-data)
         matrixized-biases (map #(m/array (mapv vector %1)) nabla-biases)
         nabla-weights (map #(m/mmul %1 (m/array [%2]))
