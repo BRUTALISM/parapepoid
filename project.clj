@@ -8,7 +8,8 @@
                  [net.mikera/vectorz-clj "0.44.0"]
                  [thi.ng/color "1.2.0"]
                  [thi.ng/geom "0.0.1173-SNAPSHOT"]
-                 [incanter "1.5.7"]]
+                 [incanter "1.5.7"]
+                 [quil "2.4.0"]]
   :main ^:skip-aot parapepoid.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
