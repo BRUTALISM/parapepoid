@@ -1,6 +1,7 @@
 (ns parapepoid.core
   (:require [clojure.core.matrix :as matrix]
             [parapepoid.color :as c]
+            [parapepoid.serialization :as s]
             [quil.core :as q]
             [quil.middleware :as mid]
             [thi.ng.geom.vector :as v]
@@ -13,7 +14,8 @@
              :shape-radius 540
              :infinite-params {:hue 0.08
                                :saturation 0.2
-                               :brightness 0.0}})
+                               :brightness 0.0}
+             :training-file "TR-I3-O1-RAND.clj"})
 
 (defn regenerate [context]
   (let [palette (c/random-pallete (:number-of-colors config))
@@ -30,16 +32,25 @@
         shapes (map shapefn (take (:number-of-samples config)
                                   (c/infinite-palette palette params)))
         sorted-shapes (reverse (sort-by :radius shapes))]
-    (assoc context :shapes sorted-shapes)))
+    (assoc context
+      :shapes sorted-shapes
+      :current-palette palette)))
 
 (defn- shape-to-rect [center radius]
   (let [x (- (:x center) (/ radius 2))
         y (- (:y center) (/ radius 2))]
     [x y radius radius]))
 
+(defn save-training [context output]
+  (let [palette (:current-palette context)
+        training (conj (:training context) [palette output])]
+    (s/write-training (:training-file config) training)
+    (assoc context :training training)))
+
 (defn setup []
   (q/frame-rate 10)
-  (regenerate {}))
+  (conj (regenerate {})
+        {:training (or (s/read-training (:training-file config)) [])}))
 
 (defn update-context [context]
   context)
@@ -53,7 +64,8 @@
 
 (defn key-pressed [context key-info]
   (case (:key key-info)
-    :r (regenerate context)
+    :r (regenerate (save-training context 0))
+    :o (regenerate (save-training context 1))
     context))
 
 (q/defsketch parapepoid
