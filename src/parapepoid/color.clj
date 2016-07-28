@@ -18,8 +18,11 @@
   (m/mag (m/- (as-vec3 c1)
               (as-vec3 c2))))
 
+(defn random-hsl []
+  (c/hsla (m/random) (m/random) (m/random)))
+
 (defn random-pallete [count]
-  (repeatedly count #(c/random-rgb)))
+  (repeatedly count #(random-hsl)))
 
 (defn next-color
   "Returns the next color in sequence for the given base colors and params."
