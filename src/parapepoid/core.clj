@@ -22,10 +22,10 @@
         radius (:shape-radius config)
         shapefn
         (fn [color]
-          (let [center (v/vec2 (rand xmax) y)]
+          (let [center (v/vec2 (int (rand xmax)) y)]
             {:color color
              :center center
-             :radius (rand radius)}))
+             :radius (int (rand radius))}))
         params (:infinite-params config)
         shapes (map shapefn (take (:number-of-samples config)
                                   (c/infinite-palette palette params)))
