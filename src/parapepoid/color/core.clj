@@ -1,22 +1,10 @@
-(ns parapepoid.color
+(ns parapepoid.color.core
   (:require [thi.ng.color.core :as c]
-            [thi.ng.geom.vector :as v]
             [thi.ng.math.core :as m]))
-
-(defn- as-vec3 [c]
-  (let [hsl (c/as-hsla c)]
-    (v/vec3 (:h hsl) (:s hsl) (:l hsl))))
 
 (defn as-rgb255-vec [color]
   (let [rgb (c/as-rgba color)]
     [(* (:r rgb) 255) (* (:g rgb) 255) (* (:b rgb) 255)]))
-
-(defn diff
-  "Calculates the difference between two colors, as a single number in the
-  [0, 1] range."
-  [c1 c2]
-  (m/mag (m/- (as-vec3 c1)
-              (as-vec3 c2))))
 
 (defn random-hsl []
   (c/hsla (m/random) (m/random) (m/random)))

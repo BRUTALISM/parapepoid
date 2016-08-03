@@ -1,11 +1,10 @@
 (ns parapepoid.sketches.color-generation
   (:require [clojure.core.matrix :as matrix]
-            [parapepoid.color :as c]
+            [parapepoid.color.core :as c]
             [parapepoid.serialization :as s]
             [quil.core :as q]
             [quil.middleware :as mid]
-            [thi.ng.geom.vector :as v]
-            [thi.ng.math.core :as m]))
+            [thi.ng.geom.vector :as v]))
 
 (matrix/set-current-implementation :vectorz)
 

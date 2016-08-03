@@ -3,7 +3,7 @@
 
 (matrix/set-current-implementation :vectorz)
 
-(defn- main []
+(defn -main
   "Something something neural networks."
   [& args]
   (prn "OHAI"))
