@@ -16,6 +16,7 @@
   weight gradients and returns them inside a map with :nabla-biases and
   :nabla-weights keys, respectively."
   [network inputs targets]
+  ; TODO: Transducerssssss!!
   (let [activation (nn/activation-fn network)
         activation-prime (nn/activation-prime-fn network)
         ws (nn/weights network)
@@ -27,14 +28,14 @@
             [(conj in-as as) (conj in-zs zs)]))
         [as zs] (reduce forward-fn
                         [[inputs] []]
-                        (partition 2 (interleave ws bs)))
+                        (map vector ws bs))
         cost-derivative (fn [outputs targets] (m/sub outputs targets))
         delta (m/mul (cost-derivative (last as) targets)
                      (m/emap activation-prime (last zs)))
         nabla-bias-fn
         (fn [nabla-biases-so-far [weights zs]]
           (conj nabla-biases-so-far
-                (m/mul (m/mmul (m/transpose weights) (last nabla-biases-so-far))
+                (m/mul (m/mmul (m/transpose weights) (first nabla-biases-so-far))
                        (m/emap activation-prime zs))))
         nabla-bias-data (map vector (reverse ws) (reverse (butlast zs)))
         nabla-biases (reduce nabla-bias-fn (list delta) nabla-bias-data)
