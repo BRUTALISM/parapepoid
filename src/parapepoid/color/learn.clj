@@ -35,9 +35,9 @@
       (prn (p/propagate-forward trained (into [] flatten-hsl
                                               (repeatedly 3 c/random-hsl)))))))
 
-(unscientific-test {:hidden-sizes [5]
-                    :learning-rate 20
-                    :batch-size 20
-                    :epochs 10})
+(unscientific-test {:hidden-sizes [4]
+                    :learning-rate 0.5
+                    :batch-size 10
+                    :epochs 30})
 
 ; TODO: pronadji najbolje meta-parametre za zadate trening podatke

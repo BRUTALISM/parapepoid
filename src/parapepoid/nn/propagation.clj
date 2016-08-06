@@ -11,6 +11,20 @@
         rfn (fn [in [ws bs]] (m/emap activation-fn (m/add (m/mmul ws in) bs)))]
     (reduce rfn inputs (map vector weights biases))))
 
+(defn quadratic-delta
+  "Returns the quadratic cost delta for the given weighted input sums (zs),
+  activations (as), target outputs (ys), and the derivative of the activation
+  function (apfn)."
+  [zs as ys apfn]
+  (m/mul (m/sub as ys)
+         (m/emap apfn zs)))
+
+(defn cross-entropy-delta
+  "Returns the cross-entropy cost delta for the given activations (as) and
+  target outputs (ys)."
+  [as ys]
+  (m/sub as ys))
+
 (defn propagate-backward
   "Propagates the given inputs forward, then calculates the per-layer bias and
   weight gradients and returns them inside a map with :nabla-biases and
@@ -29,13 +43,13 @@
         [as zs] (reduce forward-fn
                         [[inputs] []]
                         (map vector ws bs))
-        cost-derivative (fn [outputs targets] (m/sub outputs targets))
-        delta (m/mul (cost-derivative (last as) targets)
-                     (m/emap activation-prime (last zs)))
+        ;delta (quadratic-delta (last zs) (last as) targets activation-prime)
+        delta (cross-entropy-delta (last as) targets)
         nabla-bias-fn
         (fn [nabla-biases-so-far [weights zs]]
           (conj nabla-biases-so-far
-                (m/mul (m/mmul (m/transpose weights) (first nabla-biases-so-far))
+                (m/mul (m/mmul (m/transpose weights)
+                               (first nabla-biases-so-far))
                        (m/emap activation-prime zs))))
         nabla-bias-data (map vector (reverse ws) (reverse (butlast zs)))
         nabla-biases (reduce nabla-bias-fn (list delta) nabla-bias-data)
