@@ -17,24 +17,19 @@
 (defn read-data
   "Reads the training data from the given file and splits it in two parts,
   training and test, which are returned inside a vector."
-  [filename test-percentage]
+  [filename]
   (let [data (s/read-training filename)
         prepare (map #(vector (into [] flatten-hsl (first %1))
-                              (vector (second %1))))
-        prepared-data (into [] prepare data)
-        training-count (* (- 1.0 test-percentage) (count prepared-data))]
-    (split-at training-count prepared-data)))
+                              (vector (second %1))))]
+    (into [] prepare data)))
 
 (defn evaluate-hyper-params
   "High-level function used for evaluating the given set of hyper-parameters for
-  the given training data. [inputs outputs] pairs are read from the specified
-  file and the data is split into training and test data using the
-  :test-data-percentage value in the params map. A network is created using the
-  other parameters in the params map (explained below), the network is trained
-  using training data, and then the error on test data is calculated and
-  returned.
+  the given training and test data. A network is created using parameters in the
+  params map (explained below), it is trained using the training data, and then
+  the error on test data is calculated and returned.
 
-  The parameters you can specify in the params map are:
+  The parameters you should specify in the params map are:
     :hidden-sizes - a vector of integers representing the neuron count for each
       hidden layer)
     :learning-rate - the learning rate used when learning from training data
@@ -42,10 +37,8 @@
     :epochs - how many times the training data is used to retrain the network
     :error-fn - which error function to use (note that this also controls which
       error delta function will be used during learning)"
-  [data-file params]
-  (let [{:keys [test-data-percentage hidden-sizes learning-rate batch-size
-                epochs error-fn]} params
-        [training-data test-data] (read-data data-file test-data-percentage)
+  [training-data test-data params]
+  (let [{:keys [hidden-sizes learning-rate batch-size epochs error-fn]} params
         input-count (count (first (first training-data)))
         network (n/network (concat [input-count] hidden-sizes [1])
                            {:error-fn error-fn})
@@ -54,12 +47,27 @@
         error (p/calculate-error trained-network test-data)]
     error))
 
-(evaluate-hyper-params "TR-I3-O1-RAND.clj"
-                       {:test-data-percentage 0.2
-                        :hidden-sizes [4]
-                        :learning-rate 0.5
-                        :batch-size 20
-                        :epochs 1
-                        :error-fn :cross-entropy})
+(defn generate-hyper-params
+  [source-params]
+  (let []
+    ; TODO: Implement.
+    source-params))
 
-; TODO: pronadji najbolje meta-parametre za zadate trening podatke
+(defn iterate-hyper
+  [data-file test-percentage iterations]
+  (let [all-data (read-data data-file)
+        training-count (* (- 1.0 test-percentage) (count all-data))
+        iteratefn
+        (fn []
+          (let [shuffled (shuffle all-data)
+                [training-data test-data] (split-at training-count shuffled)
+                hyper-params (generate-hyper-params {:hidden-sizes [4]
+                                                     :learning-rate 0.5
+                                                     :batch-size 20
+                                                     :epochs 1
+                                                     :error-fn :cross-entropy})]
+            [hyper-params
+             (evaluate-hyper-params training-data test-data hyper-params)]))]
+    (repeatedly iterations iteratefn)))
+
+(iterate-hyper "TR-I3-O1-RAND.clj" 0.2 3)
