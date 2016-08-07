@@ -1,16 +1,15 @@
 (ns parapepoid.nn.learn
   (:require [clojure.core.matrix :as m]
-            [parapepoid.nn.core :as nn]
-            [parapepoid.nn.propagation :as p]
-            [parapepoid.nn.core :as n]))
+            [parapepoid.nn.core :as n]
+            [parapepoid.nn.propagation :as p]))
 
 (defn train
   "Trains the given network by using the given batch of [inputs, outputs] pairs
   and the given learning rate."
   [network batch learning-rate]
   (let [zeroing-fn (fn [m] (m/zero-array (m/shape m)))
-        start-bs (map zeroing-fn (nn/biases network))
-        start-ws (map zeroing-fn (nn/weights network))
+        start-bs (map zeroing-fn (n/biases network))
+        start-ws (map zeroing-fn (n/weights network))
         single-batch
         (fn [[bs ws] [ins outs]]
           (let [nablas (p/propagate-backward network ins outs)]
@@ -21,9 +20,9 @@
         apply-nabla
         (fn [m nabla]
           (m/sub m (m/mul nabla nabla-scale-factor)))
-        biases (map apply-nabla (nn/biases network) nabla-bs)
-        weights (map apply-nabla (nn/weights network) nabla-ws)]
-    (nn/raw-network weights biases (n/options network))))
+        biases (map apply-nabla (n/biases network) nabla-bs)
+        weights (map apply-nabla (n/weights network) nabla-ws)]
+    (n/raw-network weights biases (n/options network))))
 
 (defn sgd
   "Trains the network using stochastic mini-batch gradient descent. Training

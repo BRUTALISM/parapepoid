@@ -5,8 +5,7 @@
   "Calculates the quadratic error for the given output layer activations (as)
   and target outputs (ys)."
   [as ys]
-  (m/mul (m/magnitude-squared (m/sub as ys))
-         0.5))
+  (/ (m/magnitude-squared (m/sub as ys)) 2))
 
 (defn quadratic-delta
   "Calculates the quadratic error delta for the given weighted input sums (zs),
@@ -22,12 +21,11 @@
   [as ys]
   (let [log (fn [x] (Math/log x))
         nan-to-zero (fn [x]
-                      (if (or (Double/isNaN x)
-                              (Double/isInfinite x)) 0 x))
+                      (if (or (Double/isNaN x) (Double/isInfinite x)) 0 x))
         first-term (m/mul (m/sub ys 1) (m/emap log (m/sub 1 as)))
         second-term (m/mul ys (m/emap log as))
         vector-error (m/sub first-term second-term)]
-    (m/emap nan-to-zero vector-error)))
+    (m/esum (m/emap nan-to-zero vector-error))))
 
 (defn cross-entropy-delta
   "Calculates the cross-entropy error delta for the given activations (as) and

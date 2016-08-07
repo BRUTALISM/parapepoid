@@ -1,14 +1,13 @@
 (ns parapepoid.nn.propagation
   (:require [clojure.core.matrix :as m]
-            [parapepoid.nn.core :as nn]
-            [parapepoid.nn.error :as e]))
+            [parapepoid.nn.core :as n]))
 
 (defn propagate-forward
   "Returns the outputs of the network when inputs are fed into it."
   [network inputs]
-  (let [activation-fn (nn/activation-fn network)
-        weights (nn/weights network)
-        biases (nn/biases network)
+  (let [activation-fn (n/activation-fn network)
+        weights (n/weights network)
+        biases (n/biases network)
         rfn (fn [in [ws bs]] (m/emap activation-fn (m/add (m/mmul ws in) bs)))]
     (reduce rfn inputs (map vector weights biases))))
 
@@ -18,10 +17,10 @@
   :nabla-weights keys, respectively."
   [network inputs targets]
   ; TODO: Transducerssssss!!
-  (let [activation (nn/activation-fn network)
-        activation-prime (nn/activation-prime-fn network)
-        ws (nn/weights network)
-        bs (nn/biases network)
+  (let [activation (n/activation-fn network)
+        activation-prime (n/activation-prime-fn network)
+        ws (n/weights network)
+        bs (n/biases network)
         forward-fn
         (fn [[in-as in-zs] [ws bs]]
           (let [zs (m/add (m/mmul ws (last in-as)) bs)
@@ -30,7 +29,7 @@
         [as zs] (reduce forward-fn
                         [[inputs] []]
                         (map vector ws bs))
-        error-delta-fn (nn/error-delta-fn network)
+        error-delta-fn (n/error-delta-fn network)
         delta (error-delta-fn (last zs) (last as) targets activation-prime)
         nabla-bias-fn
         (fn [nabla-biases-so-far [weights zs]]
@@ -45,3 +44,17 @@
                            matrixized-biases (butlast as))]
     {:nabla-biases nabla-biases
      :nabla-weights nabla-weights}))
+
+(defn calculate-error
+  "Returns the total error for the given set of [input, output] pairs in
+  test-data."
+  [network test-data]
+  ; TODO: Add regularization support.
+  (let [error-fn (n/error-fn network)
+        data-length (count test-data)
+        iterate-error
+        (fn [error [inputs outputs]]
+          (+ error
+             (/ (error-fn (propagate-forward network inputs) outputs)
+                data-length)))]
+    (reduce iterate-error 0.0 test-data)))

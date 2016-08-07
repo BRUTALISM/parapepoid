@@ -37,8 +37,8 @@
                                               (repeatedly 3 c/random-hsl)))))))
 
 (unscientific-test {:hidden-sizes [4]
-                    :learning-rate 2
-                    :batch-size 100
+                    :learning-rate 0.5
+                    :batch-size 20
                     :epochs 1
                     :error-fn :cross-entropy})
 
