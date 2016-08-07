@@ -1,6 +1,7 @@
 (ns parapepoid.nn.propagation
   (:require [clojure.core.matrix :as m]
-            [parapepoid.nn.core :as nn]))
+            [parapepoid.nn.core :as nn]
+            [parapepoid.nn.error :as e]))
 
 (defn propagate-forward
   "Returns the outputs of the network when inputs are fed into it."
@@ -10,20 +11,6 @@
         biases (nn/biases network)
         rfn (fn [in [ws bs]] (m/emap activation-fn (m/add (m/mmul ws in) bs)))]
     (reduce rfn inputs (map vector weights biases))))
-
-(defn quadratic-delta
-  "Returns the quadratic cost delta for the given weighted input sums (zs),
-  activations (as), target outputs (ys), and the derivative of the activation
-  function (apfn)."
-  [zs as ys apfn]
-  (m/mul (m/sub as ys)
-         (m/emap apfn zs)))
-
-(defn cross-entropy-delta
-  "Returns the cross-entropy cost delta for the given activations (as) and
-  target outputs (ys)."
-  [as ys]
-  (m/sub as ys))
 
 (defn propagate-backward
   "Propagates the given inputs forward, then calculates the per-layer bias and
@@ -43,8 +30,8 @@
         [as zs] (reduce forward-fn
                         [[inputs] []]
                         (map vector ws bs))
-        ;delta (quadratic-delta (last zs) (last as) targets activation-prime)
-        delta (cross-entropy-delta (last as) targets)
+        error-delta-fn (nn/error-delta-fn network)
+        delta (error-delta-fn (last zs) (last as) targets activation-prime)
         nabla-bias-fn
         (fn [nabla-biases-so-far [weights zs]]
           (conj nabla-biases-so-far

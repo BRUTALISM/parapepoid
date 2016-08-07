@@ -18,14 +18,15 @@
   "Reads the [color-palette output] training pairs from the given file and
   trains a neural network using the given params."
   [data-file params]
-  (let [{:keys [hidden-sizes learning-rate batch-size epochs]} params
+  (let [{:keys [hidden-sizes learning-rate batch-size epochs error-fn]} params
         data (s/read-training data-file)
         prepare (map #(vector (into [] flatten-hsl (first %1))
                               (vector (second %1))))
         prepared-data (into [] prepare data)
         ; TODO: Ne koristi sve podatke za trening, odvoji za validation i test.
         input-count (* 3 (count (first (first data))))
-        network (n/network (concat [input-count] hidden-sizes [1]))
+        network (n/network (concat [input-count] hidden-sizes [1])
+                           {:error-fn error-fn})
         trained (l/sgd network prepared-data batch-size learning-rate epochs)]
     trained))
 
@@ -36,8 +37,9 @@
                                               (repeatedly 3 c/random-hsl)))))))
 
 (unscientific-test {:hidden-sizes [4]
-                    :learning-rate 0.5
-                    :batch-size 10
-                    :epochs 30})
+                    :learning-rate 2
+                    :batch-size 100
+                    :epochs 1
+                    :error-fn :cross-entropy})
 
 ; TODO: pronadji najbolje meta-parametre za zadate trening podatke
