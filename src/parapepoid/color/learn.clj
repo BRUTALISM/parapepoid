@@ -14,32 +14,52 @@
         unpack (mapcat #(u/select-values % [:h :s :l]))]
     (comp to-hsl unpack)))
 
-(defn train-network
-  "Reads the [color-palette output] training pairs from the given file and
-  trains a neural network using the given params."
-  [data-file params]
-  (let [{:keys [hidden-sizes learning-rate batch-size epochs error-fn]} params
-        data (s/read-training data-file)
+(defn read-data
+  "Reads the training data from the given file and splits it in two parts,
+  training and test, which are returned inside a vector."
+  [filename test-percentage]
+  (let [data (s/read-training filename)
         prepare (map #(vector (into [] flatten-hsl (first %1))
                               (vector (second %1))))
         prepared-data (into [] prepare data)
-        ; TODO: Ne koristi sve podatke za trening, odvoji za validation i test.
-        input-count (* 3 (count (first (first data))))
+        training-count (* (- 1.0 test-percentage) (count prepared-data))]
+    (split-at training-count prepared-data)))
+
+(defn evaluate-hyper-params
+  "High-level function used for evaluating the given set of hyper-parameters for
+  the given training data. [inputs outputs] pairs are read from the specified
+  file and the data is split into training and test data using the
+  :test-data-percentage value in the params map. A network is created using the
+  other parameters in the params map (explained below), the network is trained
+  using training data, and then the error on test data is calculated and
+  returned.
+
+  The parameters you can specify in the params map are:
+    :hidden-sizes - a vector of integers representing the neuron count for each
+      hidden layer)
+    :learning-rate - the learning rate used when learning from training data
+    :batch-size - the batch size used during stochastic gradient descent
+    :epochs - how many times the training data is used to retrain the network
+    :error-fn - which error function to use (note that this also controls which
+      error delta function will be used during learning)"
+  [data-file params]
+  (let [{:keys [test-data-percentage hidden-sizes learning-rate batch-size
+                epochs error-fn]} params
+        [training-data test-data] (read-data data-file test-data-percentage)
+        input-count (count (first (first training-data)))
         network (n/network (concat [input-count] hidden-sizes [1])
                            {:error-fn error-fn})
-        trained (l/sgd network prepared-data batch-size learning-rate epochs)]
-    trained))
+        trained-network (l/sgd network training-data batch-size learning-rate
+                               epochs)
+        error (p/calculate-error trained-network test-data)]
+    error))
 
-(defn unscientific-test [params]
-  (let [trained (train-network "TR-I3-O1-RAND.clj" params)]
-    (doseq [_ (range 20)]
-      (prn (p/propagate-forward trained (into [] flatten-hsl
-                                              (repeatedly 3 c/random-hsl)))))))
-
-(unscientific-test {:hidden-sizes [4]
-                    :learning-rate 0.5
-                    :batch-size 20
-                    :epochs 1
-                    :error-fn :cross-entropy})
+(evaluate-hyper-params "TR-I3-O1-RAND.clj"
+                       {:test-data-percentage 0.2
+                        :hidden-sizes [4]
+                        :learning-rate 0.5
+                        :batch-size 20
+                        :epochs 1
+                        :error-fn :cross-entropy})
 
 ; TODO: pronadji najbolje meta-parametre za zadate trening podatke
