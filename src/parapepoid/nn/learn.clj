@@ -28,7 +28,12 @@
   "Trains the network using stochastic mini-batch gradient descent. Training
   data should be a list of [inputs outputs] pairs used to train the network."
   [network training-data batch-size learning-rate epochs]
-  (let [batch-train (fn [net batch] (train net batch learning-rate))
+  (let [batch-train
+        (fn [net batch]
+          (let [trained (train net batch learning-rate)
+                error (p/calculate-error trained batch)]
+            (println (str "error: " error))
+            trained))
         train-epoch
         (fn [net]
           (let [batches (partition batch-size batch-size []
