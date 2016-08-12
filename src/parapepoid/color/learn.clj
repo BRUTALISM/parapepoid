@@ -31,11 +31,20 @@
                               (vector (second %1))))]
     (into [] prepare data)))
 
+(defn prepare-data
+  "Reads color palette test data from a given file and returns data separated
+  into training and test data using the given percentage."
+  [data-file test-percentage]
+  (let [all-data (read-data data-file)
+        training-count (* (- 1.0 test-percentage) (count all-data))
+        shuffled (shuffle all-data)]
+    (split-at training-count shuffled)))
+
 (defn evaluate-hyper-params
   "High-level function used for evaluating the given set of hyper-parameters for
   the given training and test data. A network is created using parameters in the
   params map (explained below), it is trained using the training data, and then
-  the error on test data is calculated and returned.
+  the error on test data is calculated. The network and the error are returned.
 
   The parameters you should specify in the params map are:
     :hidden-sizes - a vector of integers representing the neuron count for each
@@ -53,8 +62,7 @@
         trained-network (l/sgd network training-data batch-size learning-rate
                                epochs)
         error (p/calculate-error trained-network test-data)]
-    (println "~~~")
-    error))
+    [network error]))
 
 (defn generate-hyper-params
   "Generates a new hyper-parameters map based on the given source-params map, if
@@ -102,4 +110,4 @@
              (evaluate-hyper-params training-data test-data hyper-params)]))]
     (repeatedly iterations iteratefn)))
 
-(iterate-hyper "TR-I3-O1-RAND.clj" 0.2 3)
+;(iterate-hyper "TR-I3-O1-RAND.clj" 0.2 3)
