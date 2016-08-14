@@ -43,8 +43,9 @@
 (defn evaluate-hyper-params
   "High-level function used for evaluating the given set of hyper-parameters for
   the given training and test data. A network is created using parameters in the
-  params map (explained below), it is trained using the training data, and then
-  the error on test data is calculated. The network and the error are returned.
+  params map (explained below), and it is trained using the training data.
+  Returns the network, the errors calculated during training, and the total
+  error against the test data.
 
   The parameters you should specify in the params map are:
     :hidden-sizes - a vector of integers representing the neuron count for each
@@ -59,10 +60,10 @@
         input-count (count (first (first training-data)))
         network (n/network (concat [input-count] hidden-sizes [1])
                            {:error-fn error-fn})
-        trained-network (l/sgd network training-data batch-size learning-rate
-                               epochs)
-        error (p/calculate-error trained-network test-data)]
-    [network error]))
+        [trained errors] (l/sgd network training-data batch-size learning-rate
+                                  epochs)
+        test-error (p/calculate-error trained test-data)]
+    [trained errors test-error]))
 
 (defn generate-hyper-params
   "Generates a new hyper-parameters map based on the given source-params map, if
@@ -97,7 +98,7 @@
 
 (defn iterate-hyper
   [data-file test-percentage iterations]
-  ; TODO: This is a crude test. Find a general, iterative, parallel solution.
+  ; TODO: This is a crude test. Probably just remove it and start over.
   (let [all-data (read-data data-file)
         training-count (* (- 1.0 test-percentage) (count all-data))
         iteratefn

@@ -26,17 +26,17 @@
 
 (defn sgd
   "Trains the network using stochastic mini-batch gradient descent. Training
-  data should be a list of [inputs outputs] pairs used to train the network."
+  data should be a list of [inputs outputs] pairs used to train the network.
+  Returns the network and a list of errors calculated during training."
   [network training-data batch-size learning-rate epochs]
   (let [batch-train
-        (fn [net batch]
+        (fn [[net errors] batch]
           (let [trained (train net batch learning-rate)
                 error (p/calculate-error trained batch)]
-            (println (str "error: " error))
-            trained))
+            [trained (conj errors error)]))
         train-epoch
-        (fn [net]
+        (fn [net-and-errors]
           (let [batches (partition batch-size batch-size []
                                    (shuffle training-data))]
-            (reduce batch-train net batches)))]
-    (nth (iterate train-epoch network) epochs)))
+            (reduce batch-train net-and-errors batches)))]
+    (nth (iterate train-epoch [network []]) epochs)))

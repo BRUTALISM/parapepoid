@@ -1,5 +1,7 @@
 (ns parapepoid.sketches.color-generation
   (:require [clojure.core.matrix :as matrix]
+            [incanter.charts :as chart]
+            [incanter.core :as inc]
             [parapepoid.color.core :as c]
             [parapepoid.color.learn :as l]
             [parapepoid.nn.propagation :as p]
@@ -13,17 +15,17 @@
 (def config {; Display params
              :number-of-colors 3
              :number-of-samples 100
-             :shape-radius 540
+             :shape-radius 340
              :infinite-params {:hue 0.08
                                :saturation 0.2
                                :brightness 0.0}
 
              ; Network generation params
              :training-file "TR-I3-O1-RAND.clj"
-             :network-params {:hidden-sizes [6]
-                              :learning-rate 0.02
-                              :batch-size 100
-                              :epochs 2
+             :network-params {:hidden-sizes [4]
+                              :learning-rate 0.01
+                              :batch-size 10
+                              :epochs 3
                               :error-fn :cross-entropy}
              :approval-max-iterations 100
              :approval-threshold 0.7})
@@ -37,12 +39,21 @@
      :center center
      :radius (int (rand radius))}))
 
+(defn display-errors [context errors]
+  (let [xs (range (count errors))
+        existing (:error-chart-window context)
+        chart-window (inc/view (chart/xy-plot xs errors))]
+    (if existing (.dispose existing))
+    (assoc context :error-chart-window chart-window)))
+
 (defn generate-network [context]
   (let [file (:training-file config)
         [training test] (l/prepare-data file 0.2)
         params (:network-params config)
-        network (first (l/evaluate-hyper-params training test params))]
-    (assoc context :network network)))
+        [network errors _] (l/evaluate-hyper-params training test params)]
+    (-> context
+        (display-errors errors)
+        (assoc :network network))))
 
 (defn palette-to-shapes [palette]
   (let [params (:infinite-params config)
@@ -131,5 +142,5 @@
              :update update-context
              :draw draw
              :key-pressed key-pressed
-             :size [1200 600]
+             :size [800 400]
              :middleware [mid/fun-mode])
