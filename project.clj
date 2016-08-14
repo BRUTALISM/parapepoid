@@ -1,5 +1,5 @@
 (defproject parapepoid "0.1.0-SNAPSHOT"
-  :description "Colorz."
+  :description "A parallelepiped gone wrong."
   :url "http://brutalism.rs"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}

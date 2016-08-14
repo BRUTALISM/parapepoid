@@ -20,8 +20,7 @@
   (as) and target outputs (ys)."
   [as ys]
   (let [log (fn [x] (Math/log x))
-        nan-to-zero (fn [x]
-                      (if (or (Double/isNaN x) (Double/isInfinite x)) 0 x))
+        nan-to-zero (fn [x] (if (Double/isNaN x) 0 x))
         first-term (m/mul (m/sub ys 1) (m/emap log (m/sub 1 as)))
         second-term (m/mul ys (m/emap log as))
         vector-error (m/sub first-term second-term)]

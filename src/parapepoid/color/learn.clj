@@ -13,7 +13,7 @@
   {:hidden-sizes [1 50]
    :learning-rate [0.00001 500.0]
    :batch-size [1 500]
-   :epochs [1 50]})
+   :epochs [1 20]})
 
 (def flatten-hsl
   "A transducer for unpacking a sequence of colors into a sequence of floating
@@ -111,4 +111,17 @@
              (evaluate-hyper-params training-data test-data hyper-params)]))]
     (repeatedly iterations iteratefn)))
 
-;(iterate-hyper "TR-I3-O1-RAND.clj" 0.2 3)
+;
+; ☞ ☞ ☞    M E T A H E U R I S T I C S
+;
+; Accepting worse solutions is a fundamental property of metaheuristics
+; because it allows for a more extensive search for the optimal solution.
+;
+; Candidates:
+;   - Simulated annealing https://en.wikipedia.org/wiki/Simulated_annealing
+;   - Iterated local search https://en.wikipedia.org/wiki/Iterated_local_search
+;   - Particle swarm https://en.wikipedia.org/wiki/Particle_swarm_optimization
+;
+; Also, read the Handbook of metaheuristics, it's in yer Dropbox.
+
+;(iterate-hyper "TR-I3-O1-RAND.clj" 0.2 1)
