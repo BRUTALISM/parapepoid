@@ -42,7 +42,9 @@
 (defn display-errors [context errors]
   (let [xs (range (count errors))
         existing (:error-chart-window context)
-        chart-window (inc/view (chart/xy-plot xs errors))]
+        chart-window (inc/view (chart/xy-plot xs errors
+                                              :x-label "Iteration"
+                                              :y-label "Learning error"))]
     (if existing (.dispose existing))
     (assoc context :error-chart-window chart-window)))
 
