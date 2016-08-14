@@ -50,9 +50,10 @@
 
 (defn generate-network [context]
   (let [file (:training-file config)
-        [training test] (l/prepare-data file 0.2)
+        [training test] (l/prepare-data file 0.05)
         params (:network-params config)
-        [network errors _] (l/evaluate-hyper-params training test params)]
+        [network errors terror] (l/evaluate-hyper-params training test params)]
+    (println "Test error: " terror)
     (-> context
         (display-errors errors)
         (assoc :network network))))
