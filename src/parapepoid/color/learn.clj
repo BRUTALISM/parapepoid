@@ -44,8 +44,7 @@
   "High-level function used for evaluating the given set of hyper-parameters for
   the given training and test data. A network is created using parameters in the
   params map (explained below), and it is trained using the training data.
-  Returns the network, the errors calculated during training, and the total
-  error against the test data.
+  Returns the network and the errors on test data per epoch.
 
   The parameters you should specify in the params map are:
     :hidden-sizes - a vector of integers representing the neuron count for each
@@ -59,11 +58,8 @@
   (let [{:keys [hidden-sizes learning-rate batch-size epochs error-fn]} params
         input-count (count (first (first training-data)))
         network (n/network (concat [input-count] hidden-sizes [1])
-                           {:error-fn error-fn})
-        [trained errors] (l/sgd network training-data batch-size learning-rate
-                                  epochs)
-        test-error (p/calculate-error trained test-data)]
-    [trained errors test-error]))
+                           {:error-fn error-fn})]
+    (l/sgd network training-data test-data batch-size learning-rate epochs)))
 
 (defn generate-hyper-params
   "Generates a new hyper-parameters map based on the given source-params map, if

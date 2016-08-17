@@ -8,7 +8,8 @@
             [parapepoid.serialization :as s]
             [quil.core :as q]
             [quil.middleware :as mid]
-            [thi.ng.geom.vector :as v]))
+            [thi.ng.geom.vector :as v]
+            [parapepoid.nn.core :as n]))
 
 (matrix/set-current-implementation :vectorz)
 
@@ -22,12 +23,12 @@
 
              ; Network generation params
              :training-file "TR-I3-O1-RAND.clj"
-             :network-params {:hidden-sizes [4]
-                              :learning-rate 0.01
+             :network-params {:hidden-sizes [20 12 4]
+                              :learning-rate 0.02
                               :batch-size 10
-                              :epochs 3
+                              :epochs 40
                               :error-fn :cross-entropy}
-             :approval-max-iterations 100
+             :approval-max-iterations 10
              :approval-threshold 0.7})
 
 (defn color-to-shape [color]
@@ -43,17 +44,17 @@
   (let [xs (range (count errors))
         existing (:error-chart-window context)
         chart-window (inc/view (chart/xy-plot xs errors
-                                              :x-label "Iteration"
-                                              :y-label "Learning error"))]
+                                              :x-label "Epoch"
+                                              :y-label "Test error"))]
     (if existing (.dispose existing))
     (assoc context :error-chart-window chart-window)))
 
 (defn generate-network [context]
   (let [file (:training-file config)
-        [training test] (l/prepare-data file 0.05)
+        [training test] (l/prepare-data file 0.1)
         params (:network-params config)
-        [network errors terror] (l/evaluate-hyper-params training test params)]
-    (println "Test error: " terror)
+        [network errors] (l/evaluate-hyper-params training test params)]
+    (println "Done.")
     (-> context
         (display-errors errors)
         (assoc :network network))))
