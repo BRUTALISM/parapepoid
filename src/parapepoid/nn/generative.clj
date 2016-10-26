@@ -34,18 +34,20 @@
 
 ;; ↓ ↓ ↓ TESTING AREA ↓ ↓ ↓
 
-(defn make-invertor [counts training-count batch-size learning-rate]
+(defn make-invertor [counts training-count test-count batch-size learning-rate]
   (let [inverse-data (fn [] (let [n (rand 1)] [[n 0] [0 n]]))]
-    (l/sgd (n/network counts)
-           (repeatedly training-count inverse-data)
-           batch-size
-           learning-rate)))
+    (first (l/sgd (n/network counts)
+                  (repeatedly training-count inverse-data)
+                  (repeatedly test-count inverse-data)
+                  batch-size
+                  learning-rate
+                  1))))
 
-(def invertor (make-invertor [2 8 2] 1000 1 2))
-(def reversed-invertor (reverse-network invertor))
+;(def invertor (make-invertor [2 8 2] 1000 100 1 2))
+;(def reversed-invertor (reverse-network invertor))
+;
+;(p/propagate-forward invertor [0.9 0])
+;(p/propagate-forward reversed-invertor
+;                     [0.016913162210121145 0.8507391898240442])
 
-(p/propagate-forward invertor [0.9 0])
-(p/propagate-forward reversed-invertor
-                     [0.016913162210121145 0.8507391898240442])
-
-(reversed-errors invertor [0.1 0])
+;(reversed-errors invertor [0.1 0])

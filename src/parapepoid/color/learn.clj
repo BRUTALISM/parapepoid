@@ -5,7 +5,10 @@
             [parapepoid.nn.learn :as l]
             [parapepoid.nn.propagation :as p]
             [parapepoid.serialization :as s]
-            [thi.ng.color.core :as tc]))
+            [parapepoid.color.serialization :as cs]
+            [parapepoid.approach.core :as a]
+            [parapepoid.approach.input-mappings :as ai]
+            [parapepoid.approach.palette-generators :as ag]))
 
 (def error-fn :cross-entropy)
 
@@ -14,31 +17,6 @@
    :learning-rate [0.00001 500.0]
    :batch-size [1 500]
    :epochs [1 20]})
-
-(def flatten-hsl
-  "A transducer for unpacking a sequence of colors into a sequence of floating
-  point numbers representing HSL values."
-  (let [to-hsl (map tc/as-hsla)
-        unpack (mapcat #(u/select-values % [:h :s :l]))]
-    (comp to-hsl unpack)))
-
-(defn read-data
-  "Reads the training data from the given file and splits it in two parts,
-  training and test, which are returned inside a vector."
-  [filename]
-  (let [data (s/read-training filename)
-        prepare (map #(vector (into [] flatten-hsl (first %1))
-                              (vector (second %1))))]
-    (into [] prepare data)))
-
-(defn prepare-data
-  "Reads color palette test data from a given file and returns data separated
-  into training and test data using the given percentage."
-  [data-file test-percentage]
-  (let [all-data (read-data data-file)
-        training-count (* (- 1.0 test-percentage) (count all-data))
-        shuffled (shuffle all-data)]
-    (split-at training-count shuffled)))
 
 (defn evaluate-hyper-params
   "High-level function used for evaluating the given set of hyper-parameters for
@@ -95,7 +73,8 @@
 (defn iterate-hyper
   [data-file test-percentage iterations]
   ; TODO: This is a crude test. Probably just remove it and start over.
-  (let [all-data (read-data data-file)
+  (let [approach (a/approach ag/random-hsl ai/flatten-hsl)
+        all-data (cs/read-data approach data-file 1.0)
         training-count (* (- 1.0 test-percentage) (count all-data))
         iteratefn
         (fn []

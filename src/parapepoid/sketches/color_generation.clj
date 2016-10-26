@@ -4,12 +4,15 @@
             [incanter.core :as inc]
             [parapepoid.color.core :as c]
             [parapepoid.color.learn :as l]
+            [parapepoid.color.serialization :as cs]
             [parapepoid.nn.propagation :as p]
             [parapepoid.serialization :as s]
+            [parapepoid.approach.core :as a]
+            [parapepoid.approach.input-mappings :as ai]
+            [parapepoid.approach.palette-generators :as ag]
             [quil.core :as q]
             [quil.middleware :as mid]
-            [thi.ng.geom.vector :as v]
-            [parapepoid.nn.core :as n]))
+            [thi.ng.geom.vector :as v]))
 
 (matrix/set-current-implementation :vectorz)
 
@@ -17,16 +20,20 @@
              :number-of-colors 3
              :number-of-samples 100
              :shape-radius 340
-             :infinite-params {:hue 0.08
+             :infinite-params {:hue 0.03
                                :saturation 0.2
-                               :brightness 0.0}
+                               :brightness 0.2}
+
+             ; Approach params
+             :approach (a/approach ag/random-hsl ai/flatten-hsl)
 
              ; Network generation params
-             :training-file "TR-I3-O1-RAND.clj"
-             :network-params {:hidden-sizes [20 12 4]
-                              :learning-rate 0.02
-                              :batch-size 10
-                              :epochs 40
+             ; TODO: Generate file name automatically based on approach params.
+             :training-file "TR-I2-O1-RAND.clj"
+             :network-params {:hidden-sizes [8 4]
+                              :learning-rate 0.01
+                              :batch-size 4
+                              :epochs 10
                               :error-fn :cross-entropy}
              :approval-max-iterations 10
              :approval-threshold 0.7})
@@ -51,7 +58,8 @@
 
 (defn generate-network [context]
   (let [file (:training-file config)
-        [training test] (l/prepare-data file 0.1)
+        approach (:approach config)
+        [training test] (cs/read-data approach file 0.1)
         params (:network-params config)
         [network errors] (l/evaluate-hyper-params training test params)]
     (println "Done.")
@@ -73,14 +81,15 @@
 (defn approved-palette [context]
   (let [iterations (:approval-max-iterations config)
         num-colors (:number-of-colors config)
+        approach (:approach config)
         network (:network context)]
     (loop [i 0
-           palette (c/random-pallete num-colors)]
+           palette (c/generate-base-palette approach num-colors)]
       (if (= i iterations)
         (do
           (println "NO COLORS APPROVED, random palette is shown.")
           (palette-into-context context palette))
-        (let [result (->> (into [] l/flatten-hsl palette)
+        (let [result (->> (into [] ai/flatten-hsl palette)
                           (p/propagate-forward network)
                           first)]
           (println "Propagation result: " result)
@@ -89,10 +98,11 @@
             (do
               (println "Accepting palette after " i " iterations.")
               (palette-into-context context palette))
-            (recur (inc i) (c/random-pallete num-colors))))))))
+            (recur (inc i) (c/generate-base-palette approach num-colors))))))))
 
 (defn random-palette [context]
-  (let [palette (c/random-pallete (:number-of-colors config))]
+  (let [palette (c/generate-base-palette (:approach config)
+                                         (:number-of-colors config))]
     (palette-into-context context palette)))
 
 (defn- shape-to-rect [center radius]
@@ -105,6 +115,8 @@
         training (conj (:training context) [palette output])]
     (s/write-training (:training-file config) training)
     (assoc context :training training)))
+
+; Quil stuff
 
 (defn setup []
   (q/frame-rate 10)

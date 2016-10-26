@@ -1,16 +1,17 @@
 (ns parapepoid.color.core
-  (:require [thi.ng.color.core :as c]
+  (:require [parapepoid.approach.core :as a]
+            [thi.ng.color.core :as c]
             [thi.ng.math.core :as m]))
 
 (defn as-rgb255-vec [color]
+  ; TODO: Move to interop ns.
   (let [rgb (c/as-rgba color)]
     [(* (:r rgb) 255) (* (:g rgb) 255) (* (:b rgb) 255)]))
 
-(defn random-hsl []
-  (c/hsla (m/random) (m/random) (m/random)))
-
-(defn random-pallete [count]
-  (repeatedly count #(random-hsl)))
+(defn generate-base-palette
+  "Generates a base palette with count colors using the given approach."
+  [approach count]
+  (take count (a/palette approach)))
 
 (defn next-color
   "Returns the next color in sequence for the given base colors and params."
