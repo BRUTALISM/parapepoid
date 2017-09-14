@@ -20,9 +20,11 @@
 (defn read-data
   "Using the given approach, reads color palette test data from the file with
   the given filename and returns shuffled data separated into training and test
-  using the given percentage."
+  data using the given percentage."
   [approach filename test-percentage]
   (let [all-data (prepare-data approach filename)
-        training-count (* (- 1.0 test-percentage) (count all-data))
+        training-count (int (* (- 1.0 test-percentage) (count all-data)))
         shuffled (shuffle all-data)]
+    (println "Read" (count all-data) "records, using" training-count
+             "as training.")
     (split-at training-count shuffled)))

@@ -12,28 +12,29 @@
             [parapepoid.approach.palette-generators :as ag]
             [quil.core :as q]
             [quil.middleware :as mid]
-            [thi.ng.geom.vector :as v]))
+            [thi.ng.geom.vector :as v]
+            [clojure.string :as str]))
 
 (matrix/set-current-implementation :vectorz)
 
 (def config {; Display params
-             :number-of-colors 3
              :number-of-samples 100
              :shape-radius 340
              :infinite-params {:hue 0.03
-                               :saturation 0.2
+                               :saturation 1.0
                                :brightness 0.2}
 
              ; Approach params
-             :approach (a/approach ag/random-hsl ai/flatten-hsl)
-
-             ; Network generation params
+             :number-of-colors 2
+             :approach (a/approach (ag/hue-offset 0.1) ai/hues-only)
              ; TODO: Generate file name automatically based on approach params.
-             :training-file "TR-I2-O1-RAND.clj"
-             :network-params {:hidden-sizes [8 4]
-                              :learning-rate 0.01
-                              :batch-size 4
-                              :epochs 10
+             :training-file "TR-I2-O1-hue-offset-0.1-hues-only.clj"
+
+             ; NN params
+             :network-params {:hidden-sizes [4]
+                              :learning-rate 0.02
+                              :batch-size 1
+                              :epochs 100
                               :error-fn :cross-entropy}
              :approval-max-iterations 10
              :approval-threshold 0.7})
@@ -89,7 +90,7 @@
         (do
           (println "NO COLORS APPROVED, random palette is shown.")
           (palette-into-context context palette))
-        (let [result (->> (into [] ai/flatten-hsl palette)
+        (let [result (->> (into [] (a/input-mapping (:approach config)) palette)
                           (p/propagate-forward network)
                           first)]
           (println "Propagation result: " result)

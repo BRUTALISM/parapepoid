@@ -10,9 +10,9 @@
   should have two arities – a 0-arity variant will be invoked for the first
   color being generated, while the 1-arity version will be invoked with the
   result of the previous iteration as a parameter. Think of the process as
-  (iterate palette-fn (palette-fn)). The input mapping transducer should map a
-  sequence of colors (representing one particular palette) into a sequence of
-  floating point numbers."
+  (iterate palette-fn (palette-fn)). In fact, that's exactly what happens. The
+  input mapping transducer should map a sequence of colors (representing one
+  particular palette) into a sequence of floating point numbers."
   [palette-fn xinput]
   {::palette-generator palette-fn
    ::input-transducer xinput})
